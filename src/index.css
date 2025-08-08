@@ -1,0 +1,40 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Roboto+Condensed:ital,wght@0,100..900;1,100..900&display=swap');
+@import "tailwindcss";
+
+html {
+  scroll-behavior: smooth;
+  cursor: default;
+}
+
+.links .active{
+  border-color: #579B52;
+}
+body{
+  font-family: 'Outfit', sans-serif;
+}
+
+@media screen and (max-width: 610px) {
+  .hero{ margin-top: -50px; }
+}
+
+@media screen and (max-width: 490px) {
+  .hero{ margin-top: -100px; }
+}
+
+@media screen and (max-width: 400px) {
+  .hero{ width: 90%; }
+}
+
+@media screen and (min-width: 1024px) and (max-width: 1050px){
+  .impact_boxes{ justify-content: space-evenly; }
+}
+
+/* index.css */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+

@@ -1,0 +1,28 @@
+.moving-text {
+    display: inline-flex;
+    padding: 2px 5px;
+    border-radius: 3px;
+    font-weight: bold;
+    position: relative;
+    animation: move 6s linear infinite alternate, blink 1s infinite; /* Combine move and blink */
+}
+
+@keyframes move {
+    0% { left: 0; }
+    100% { left: 200px; } /* Moves 200px to the right */
+}
+
+@keyframes blink {
+    0% { opacity: 1; }
+    50% { opacity: 0.4; } /* Fades to low opacity for blink effect */
+    100% { opacity: 1; }
+}
+
+.container {
+    display: flex;
+    justify-content: center;
+    width: 100%; /* Full-width container */
+    overflow: hidden;
+    position: relative;
+    height: 50px; /* Ensure container has height for visibility */
+}

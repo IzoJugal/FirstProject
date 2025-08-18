@@ -2,8 +2,9 @@ import './App.css';
 import { Suspense, lazy, useEffect } from 'react';
 import { Route, Routes } from 'react-router-dom';
 import { useAuth } from './authContext/Auth';
+import ResetPassword from './pages/home/ResetPassword';
+import CompleteProfile from './pages/home/CompleteProfile';
 const VolunteersData = lazy(() => './pages/Admin/VolunteersData');
-const CompleteProfile = lazy(() => './pages/home/CompleteProfile');
 const LogoUpload = lazy(() => './pages/Admin/LogoUpload');
 const PrivateRoute = lazy(() => import('./components/PrivateRoute'));
 const MainLayout = lazy(() => import('./components/MainLayout'));
@@ -67,7 +68,7 @@ function App() {
       const interval = setInterval(() => {
       }, 5000);
 
-      return () => clearInterval(interval); 
+      return () => clearInterval(interval);
     }, []);
 
     return (
@@ -109,6 +110,9 @@ function App() {
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/GreenSorts" element={<GreenSortsSignup />} />
 
+          {/* Reset Password */}
+          <Route path="/reset-password/:token" element={<ResetPassword />} />
+
           {/* Volunteers */}
           <Route path="/volunteer-signup" element={<VolunteerSignup />} />
           <Route path="/volunteer-dashboard" element={<PrivateRoute allowedRoles={['volunteer']}><MainLayout><VolunteerDashboard /></MainLayout></PrivateRoute>} />
@@ -132,7 +136,7 @@ function App() {
           {/* Recycler */}
           <Route path="/greensorts-dashboard" element={<PrivateRoute allowedRoles={['recycler']}><MainLayout><GreenSortsDashboard /></MainLayout></PrivateRoute>} />
           <Route path="/recycleddata" element={<PrivateRoute allowedRoles={['recycler']}><MainLayout><RecycledData /></MainLayout></PrivateRoute>} />
-      
+
 
           {/* Admin */}
           <Route path='/admin-dashboard' element={<PrivateRoute allowedRoles={['admin']}><MainLayout><AdminDashboard /></MainLayout></PrivateRoute>} />
@@ -153,14 +157,14 @@ function App() {
 
           <Route path="/settings" element={<PrivateRoute><MainLayout><Settings /></MainLayout></PrivateRoute>} />
           <Route path="/notifications" element={<PrivateRoute><MainLayout><Notifications /></MainLayout></PrivateRoute>} />
-    
-      <Route path="*" element={<NotFound />} />
 
-      <Route path="/complete-profile" element={<CompleteProfile />} />
+          <Route path="*" element={<NotFound />} />
+
+          <Route path="/complete-profile/:id" element={<CompleteProfile />} />
 
 
         </Routes>
-        
+
       </Suspense>
 
       {!isAuthenticated && <Footer />}

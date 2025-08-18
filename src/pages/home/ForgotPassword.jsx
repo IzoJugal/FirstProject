@@ -54,7 +54,7 @@ const ForgotPassword = () => {
             <div className="w-full max-w-sm space-y-6">
                 {/* Logo and Tagline */}
                 <div className="text-center">
-                    <img src="/logo.png" alt="ScrapSeva" className="mx-auto w-28 h-28" />
+                    <img src="/logo.png" alt="Gauabhayaranyam" className="mx-auto w-28 h-28" />
                     <h1 className="text-xl font-bold text-gray-800 mt-2">
                         <span className="text-green-600">Gauabhayaranyam</span>
                     </h1>

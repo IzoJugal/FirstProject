@@ -4,6 +4,11 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 
+// const API = import.meta.env.VITE_BACK_URL
+
+const API = "http://localhost:5000"
+
+
 const Signup = () => {
   const [formData, setFormData] = useState({
     firstName: "",
@@ -57,7 +62,7 @@ const Signup = () => {
     try {
       if (!otpSent) {
         // Send OTP to phone only
-        const res = await axios.post(`${import.meta.env.VITE_BACK_URL}/auth/send-otp`, {
+        const res = await axios.post(`${API}/auth/send-otp`, {
           phone: formData.phone,
           method: "phone",
         });
@@ -78,7 +83,7 @@ const Signup = () => {
           method: "phone",
         };
 
-        const res = await axios.post(`${import.meta.env.VITE_BACK_URL}/auth/signup`, payload);
+        const res = await axios.post(`${API}/auth/signup`, payload);
 
         if (res.data.token) {
           toast.success("Signup successful! You've successfully signed up as a User.", { autoClose: 3000 });
@@ -124,7 +129,7 @@ const Signup = () => {
       setCanResendOtp(false); // Disable resend button immediately
       setOtp("");
 
-      const res = await axios.post(`${import.meta.env.VITE_BACK_URL}/auth/send-otp`, {
+      const res = await axios.post(`${API}/auth/send-otp`, {
         phone: formData.phone,
         method: "phone",
       });
@@ -176,8 +181,8 @@ const Signup = () => {
 
         {/* Logo + Headings */}
         <div className="text-center">
-          <img src="/logo.png" alt="ScrapSeva" className="mx-auto w-14 h-14 mb-2" />
-          <h1 className="text-xl font-bold text-gray-800">Join ScrapSeva</h1>
+          <img src="/logo.png" alt="Gauabhayaranyam" className="mx-auto w-14 h-14 mb-2" />
+          <h1 className="text-xl font-bold text-gray-800">Join Gauabhayaranyam</h1>
           <p className="text-sm text-gray-500">Create your account and start donating scrap</p>
         </div>
 
@@ -316,7 +321,7 @@ const Signup = () => {
 
               {/* Logo + Title */}
               <div className="text-center space-y-1">
-                <img src="/logo.png" alt="ScrapSeva Logo" className="w-12 h-12 mx-auto" />
+                <img src="/logo.png" alt="Gauabhayaranyam Logo" className="w-12 h-12 mx-auto" />
                 <h1 className="text-xl font-bold text-gray-900">OTP Verification</h1>
                 <p className="text-sm text-gray-600">
                   Enter 4 digit code sent to <br />

@@ -177,8 +177,8 @@ const VolunteerSignup = () => {
 
         {/* Header */}
         <div className="text-center">
-          <img src="/logo.png" alt="ScrapSeva Logo" className="mx-auto w-14 mb-2" />
-          <h2 className="text-2xl font-bold text-green-700">Join ScrapSeva</h2>
+          <img src="/logo.png" alt="Gauabhayaranyam Logo" className="mx-auto w-14 mb-2" />
+          <h2 className="text-2xl font-bold text-green-700">Join Gauabhayaranyam</h2>
           <p className="text-sm text-gray-500 mt-1">
             Create your volunteer account and start supporting the community
           </p>
@@ -272,7 +272,7 @@ const VolunteerSignup = () => {
 
               {/* Logo + Title */}
               <div className="text-center space-y-1">
-                <img src="/logo.png" alt="ScrapSeva Logo" className="w-12 h-12 mx-auto" />
+                <img src="/logo.png" alt="Gauabhayaranyam Logo" className="w-12 h-12 mx-auto" />
                 <h1 className="text-xl font-bold text-gray-900">OTP Verification</h1>
                 <p className="text-sm text-gray-600">
                   Enter 4 digit code sent to <br />

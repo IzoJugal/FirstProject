@@ -291,7 +291,7 @@ const GreenSortsSignup = () => {
 
                             {/* Logo + Title */}
                             <div className="text-center space-y-1">
-                                <img src="/logo.png" alt="ScrapSeva Logo" className="w-12 h-12 mx-auto" />
+                                <img src="/logo.png" alt="Gauabhayaranyam Logo" className="w-12 h-12 mx-auto" />
                                 <h1 className="text-xl font-bold text-gray-900">OTP Verification</h1>
                                 <p className="text-sm text-gray-600">
                                     Enter 4 digit code sent to <br />

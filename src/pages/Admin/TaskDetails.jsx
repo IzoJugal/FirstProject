@@ -488,8 +488,8 @@ const TaskDetails = () => {
           aria-modal="true"
           aria-labelledby="modal-title"
         >
-          <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-xl relative">
-            <button
+          <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-xl relative max-h-[90vh] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-100">
+   <button
               onClick={() => {
                 setShowModal(false);
                 setModalMode("create");

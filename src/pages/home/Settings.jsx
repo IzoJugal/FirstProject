@@ -6,7 +6,7 @@ import { CameraIcon, Eye, EyeOff, Loader, Mail, Phone, User } from 'lucide-react
 
 const Settings = () => {
   const { authorizationToken, logout } = useAuth();
-  // const [notificationsOn, setNotificationsOn] = useState(true);
+  const [notificationsOn, setNotificationsOn] = useState(true);
   const [user, setUser] = useState(null);
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [newFirstName, setNewFirstName] = useState("");
@@ -50,7 +50,7 @@ const Settings = () => {
         setNewPhone(data.user.phone || data.user.phoneNumber || "");
         setNewEmail(data.user.email || "");
         setNewImage(data.user.profileImage || "");
-        // setNotificationsOn(data.user.notificationsEnabled !== false); // Default to true if not specified
+        setNotificationsOn(data.user.notificationsEnabled !== false); // Default to true if not specified
       } else {
         toast.error(data.message || "Error loading profile");
       }
@@ -65,31 +65,31 @@ const Settings = () => {
   }, [fetchProfile]);
 
   // Handle notification toggle
-  // const handleNotificationToggle = async () => {
-  //   const newValue = !notificationsOn;
-  //   setNotificationsOn(newValue);
-  //   try {
-  //     const res = await fetch(`${import.meta.env.VITE_BACK_URL}/auth/profile`, {
-  //       method: "PATCH",
-  //       headers: {
-  //         Authorization: authorizationToken,
-  //         "Content-Type": "application/json",
-  //       },
-  //       body: JSON.stringify({ notificationsEnabled: newValue }),
-  //     });
-  //     const data = await res.json();
-  //     if (!res.ok) {
-  //       setNotificationsOn(!newValue); // Revert on failure
-  //       toast.error(data.message || "Failed to update notification settings");
-  //     } else {
-  //       toast.success("Notification settings updated");
-  //     }
-  //   } catch (err) {
-  //     console.error("Notification toggle error:", err);
-  //     setNotificationsOn(!newValue); // Revert on error
-  //     toast.error("Server error");
-  //   }
-  // };
+  const handleNotificationToggle = async () => {
+    const newValue = !notificationsOn;
+    setNotificationsOn(newValue);
+    try {
+      const res = await fetch(`${import.meta.env.VITE_BACK_URL}/auth/profile`, {
+        method: "PATCH",
+        headers: {
+          Authorization: authorizationToken,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ notificationsEnabled: newValue }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setNotificationsOn(!newValue); // Revert on failure
+        toast.error(data.message || "Failed to update notification settings");
+      } else {
+        toast.success("Notification settings updated");
+      }
+    } catch (err) {
+      console.error("Notification toggle error:", err);
+      setNotificationsOn(!newValue); // Revert on error
+      toast.error("Server error");
+    }
+  };
 
   const handleSaveProfile = async () => {
     setIsSavingProfile(true);
@@ -215,8 +215,8 @@ const Settings = () => {
     if (
       formattedRoles.includes("Donor") &&
       formattedRoles.includes("Dealer") &&
-            formattedRoles.includes("Admin") &&
-            formattedRoles.includes("Recycler") &&
+      formattedRoles.includes("Admin") &&
+      formattedRoles.includes("Recycler") &&
       formattedRoles.includes("Volunteer") &&
       formattedRoles.length === 2
     ) {
@@ -237,22 +237,26 @@ const Settings = () => {
       <div className="flex flex-col border-green-500 items-center mb-6 space-y-3">
         <img
           src={
-            user?.profileImage
-              ? `${import.meta.env.VITE_BACK_URL}/auth/profile/image/${user.profileImage}`
-              : "/img/profile-img.webp"
+            previewImage
+              ? previewImage
+              : user?.profileImage
+                ? user.profileImage.startsWith("http")
+                  ? user.profileImage
+                  : `http://localhost:5000/auth/profile/image/${user.profileImage}`
+                : "/img/profile-img.webp"
           }
-          alt={`${user?.firstName || 'User'}'s profile`}
-          className="w-28 h-28 rounded-full border-4 border-green-500 shadow-md object-cover"
+          alt="Profile"
+          className="w-28 h-28 rounded-full object-cover shadow-md"
         />
 
         <div className="text-center">
           <p className="text-lg font-semibold text-gray-800">{user?.firstName || 'Unknown User'} {user?.lastName || 'Unknown User'}</p>
           <p className="text-sm text-violet-500 capitalize">
-             {Array.isArray(user?.roles) && (
-  <span className="text-sm font-medium text-center mt-5 block">
-    {formatRolesDisplay(user.roles)}
-  </span>
-)}
+            {Array.isArray(user?.roles) && (
+              <span className="text-sm font-medium text-center mt-5 block">
+                {formatRolesDisplay(user.roles)}
+              </span>
+            )}
 
           </p>
         </div>
@@ -271,12 +275,12 @@ const Settings = () => {
           </div>
         </div>
 
-        {/*  <div className="flex items-center justify-between p-3 bg-white rounded-xl shadow">
-         <div className="flex items-center gap-3">
+        <div className="flex items-center justify-between p-3 bg-white rounded-xl shadow">
+          <div className="flex items-center gap-3">
             <FaBell className="text-green-600" />
             <span className="text-sm font-medium">Notifications</span>
           </div>
-           <label className="inline-flex items-center cursor-pointer">
+          <label className="inline-flex items-center cursor-pointer">
             <input
               type="checkbox"
               className="sr-only peer"
@@ -293,7 +297,7 @@ const Settings = () => {
               ></div>
             </div>
           </label>
-        </div>*/}
+        </div>
 
         <div
           onClick={() => setShowPasswordModal(true)}
@@ -347,12 +351,15 @@ const Settings = () => {
                   previewImage
                     ? previewImage
                     : user?.profileImage
-                      ? `${import.meta.env.VITE_BACK_URL}/auth/profile/image/${user.profileImage}`
-                      : "/default.png"
+                      ? user.profileImage.startsWith("http")
+                        ? user.profileImage
+                        : `http://localhost:5000/auth/profile/image/${user.profileImage}`
+                      : "/img/profile-img.webp"
                 }
                 alt="Profile"
                 className="w-28 h-28 rounded-full object-cover shadow-md"
               />
+
               <label
                 htmlFor="profile-upload"
                 className="absolute -bottom-4 left-1/2 transform -translate-x-1/4 bg-green-600 p-1.5 rounded-full cursor-pointer hover:bg-green-700 transition"

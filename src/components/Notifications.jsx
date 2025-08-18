@@ -4,6 +4,7 @@ import { Bell, CheckCheck, Trash2, View } from "lucide-react";
 import { useNotification } from "../authContext/useNotification";
 import { socket } from "../authContext/useSocket";
 import { useNavigate } from "react-router-dom";
+import { getFCMToken } from "../Firebase/fcm";
 
 const API = import.meta.env.VITE_BACK_URL;
 
@@ -13,9 +14,9 @@ const Notifications = () => {
   const [notifications, setNotifications] = useState([]);
   const { setUnreadCount } = useNotification();
   const [loading, setLoading] = useState(new Set());
-
   const navigate = useNavigate();
 
+  // ✅ Fetch notifications
   const fetchNotifications = useCallback(async () => {
     try {
       const res = await fetch(`${API}/notifications/notifications`, {
@@ -25,7 +26,7 @@ const Notifications = () => {
       const list = Array.isArray(data.notifications) ? data.notifications : [];
       setNotifications(list);
 
-      // ✅ Recalculate unread count
+      // Recalculate unread count
       const unread = list.filter((n) => !n.isRead).length;
       setUnreadCount(unread);
     } catch (err) {
@@ -33,8 +34,22 @@ const Notifications = () => {
     }
   }, [authorizationToken, setUnreadCount]);
 
+  // ✅ Save FCM Token to backend
+  const saveFCMToken = useCallback(async () => {
+    if (!authorizationToken) return;
+    const token = await getFCMToken(authorizationToken); // pass auth here
+    if (!token) return;
+
+    console.log("✅ FCM token handled in fcm.ts and saved to backend");
+  }, [authorizationToken]);
+
+  useEffect(() => {
+    saveFCMToken();
+  }, [saveFCMToken]);
+
   useEffect(() => {
     fetchNotifications();
+    saveFCMToken(); // 👈 save token when component mounts
 
     const interval = setInterval(() => {
       fetchNotifications();
@@ -53,19 +68,17 @@ const Notifications = () => {
         ...prev,
       ]);
       setUnreadCount((prev) => prev + 1);
-
     });
-
 
     return () => {
       clearInterval(interval);
       socket.off("newNotification");
     };
-  }, [fetchNotifications, setUnreadCount]);
+  }, [fetchNotifications, setUnreadCount, saveFCMToken]);
 
+  // ✅ Mark as read
   const markAsRead = async (id) => {
     setLoading((prev) => new Set(prev).add(id));
-
     await fetch(`${API}/notifications/${id}/read`, {
       method: "PATCH",
       headers: { Authorization: authorizationToken },
@@ -83,6 +96,7 @@ const Notifications = () => {
     }
   };
 
+  // ✅ Clear all
   const clearAll = async () => {
     await fetch(`${API}/notifications/clear`, {
       method: "DELETE",
@@ -92,9 +106,8 @@ const Notifications = () => {
     setUnreadCount(0);
   };
 
-  const ITEMS_PER_PAGE = 5;
+  const ITEMS_PER_PAGE = 6;
   const [currentPage, setCurrentPage] = useState(1);
-
   const totalPages = Math.ceil(notifications.length / ITEMS_PER_PAGE);
 
   useEffect(() => {
@@ -123,87 +136,97 @@ const Notifications = () => {
         </div>
       ) : (
         <ul className="space-y-4">
-          {notifications.map((n) => (
-            <li
-              key={n._id}
-              className={`group border rounded-xl p-4 transition shadow-sm hover:shadow-md ${n.isRead ? "bg-white" : "bg-yellow-50 border-yellow-300"
-                }`}
-            >
-              <div className="flex justify-between items-start gap-3">
-                <div className="flex-1">
+          {notifications
+            .slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE)
+            .map((n) => (
+              <li
+                key={n._id}
+                className={`group border rounded-xl p-4 transition shadow-sm hover:shadow-md ${n.isRead
+                    ? "bg-white"
+                    : "bg-yellow-50 border-yellow-300"
+                  }`}
+              >
+                <div className="flex justify-between items-start gap-3">
+                  <div className="flex-1">
+                    <p className="text-gray-800 text-sm">
+                      {!n.isRead && (
+                        <span className="text-blue-600 text-lg">●</span>
+                      )}
+                      {n.message}
+                    </p>
+                    <p className="text-xs text-gray-500 mt-1">
+                      {new Date(n.createdAt).toLocaleString()}
+                    </p>
+                  </div>
 
-                  <p className="text-gray-800 text-sm">
-                    {!n.isRead && <span className="text-blue-600 text-lg">●</span>}
-                    {n.message}</p>
-                  <p className="text-xs text-gray-500 mt-1">
-                    {new Date(n.createdAt).toLocaleString()}
-                  </p>
+                  {!n.isRead && (
+                    <button
+                      onClick={async () => {
+                        try {
+                          setLoading((prev) => new Set(prev).add(n._id));
+                          await markAsRead(n._id);
+                          setLoading((prev) => {
+                            const newSet = new Set(prev);
+                            newSet.delete(n._id);
+                            return newSet;
+                          });
+                        } catch (err) {
+                          console.error("Error marking as read:", err);
+                        }
+                      }}
+                      className="text-green-600 hover:text-green-800 transition"
+                      title="Mark as Read"
+                    >
+                      {loading.has(n._id) ? (
+                        <span className="animate-spin inline-block w-4 h-4 border-2 border-green-500 border-t-transparent rounded-full" />
+                      ) : (
+                        <CheckCheck className="w-5 h-5" />
+                      )}
+                    </button>
+                  )}
+
+                  {n.link && (
+                    <button
+                      onClick={() => navigate(n.link)}
+                      className="text-blue-600 hover:text-blue-800 transition ml-2"
+                      title="View Notification"
+                    >
+                      <View />
+                    </button>
+                  )}
                 </div>
-
-                {!n.isRead && (
-                  <button
-                    onClick={async () => {
-                      try {
-                        setLoading((prev) => new Set(prev).add(n._id));
-                        await markAsRead(n._id);
-                        setLoading((prev) => {
-                          const newSet = new Set(prev);
-                          newSet.delete(n._id);
-                          return newSet;
-                        });
-                      } catch (err) {
-                        console.error("Error marking as read:", err);
-                      }
-                    }}
-                    className="text-green-600 hover:text-green-800 transition"
-                    title="Mark as Read"
-                  >
-                    {loading.has(n._id) ? (
-                      <span className="animate-spin inline-block w-4 h-4 border-2 border-green-500 border-t-transparent rounded-full" />
-                    ) : (
-                      <CheckCheck className="w-5 h-5" />
-                    )}
-                  </button>
-                )}
-
-                {n.link && (
-                  <button
-                    onClick={() => navigate(n.link)}
-                    className="text-blue-600 hover:text-blue-800 transition ml-2"
-                    title="View Notification"
-                  >
-                    <View />
-                  </button>
-                )}
-              </div>
-            </li>
-          ))}
+              </li>
+            ))}
         </ul>
-    )}
-    {totalPages >1 && (
-       <div className="flex justify-center items-center gap-4 mt-6">
-        <button
-          onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
-          disabled={currentPage === 1}
-          className="px-4 py-2 bg-gray-200 text-gray-700 rounded disabled:opacity-50"
-        >
-          Previous
-        </button>
-        <span className="text-sm text-gray-600">
-          Page {currentPage} of {totalPages}
-        </span>
-        <button
-          onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
-          disabled={currentPage === totalPages}
-          className="px-4 py-2 bg-gray-200 text-gray-700 rounded disabled:opacity-50"
-        >
-          Next
-        </button>
-      </div>
-    
-    )}
+      )}
+
+      {totalPages > 1 && (
+        <div className="flex justify-center items-center gap-4 mt-6">
+          <button
+            onClick={() =>
+              setCurrentPage((prev) => Math.max(1, prev - 1))
+            }
+            disabled={currentPage === 1}
+            className="px-4 py-2 bg-gray-200 text-gray-700 rounded disabled:opacity-50"
+          >
+            Previous
+          </button>
+          <span className="text-sm text-gray-600">
+            Page {currentPage} of {totalPages}
+          </span>
+          <button
+            onClick={() =>
+              setCurrentPage((prev) => Math.min(totalPages, prev + 1))
+            }
+            disabled={currentPage === totalPages}
+            className="px-4 py-2 bg-gray-200 text-gray-700 rounded disabled:opacity-50"
+          >
+            Next
+          </button>
+        </div>
+      )}
     </div>
-  )
+  );
 };
 
 export default Notifications;

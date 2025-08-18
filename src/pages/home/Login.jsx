@@ -3,6 +3,10 @@ import { useNavigate, Link } from "react-router-dom";
 import { toast } from "react-toastify";
 import { Mail, Lock, Loader2, Eye, EyeOff, UserRoundPlus, LoaderPinwheel, LucideLoaderPinwheel } from "lucide-react";
 import { useAuth } from "../../authContext/Auth";
+import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+import { auth } from "../../Firebase/firebase";
+// import axios from "axios";
+
 
 const Login = () => {
   const navigate = useNavigate();
@@ -13,6 +17,7 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [successLoading, setSuccessLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
 
   const validate = () => {
     const newErrors = {};
@@ -106,6 +111,79 @@ const Login = () => {
     }
   };
 
+  let isSigningIn = false;
+
+
+  async function handleGoogleLogin() {
+    if (isSigningIn) return;
+    isSigningIn = true;
+    setGoogleLoading(true); // 🔹 Start loader
+
+    try {
+      const provider = new GoogleAuthProvider();
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+      console.log("Google User:", user);
+
+      const idToken = await user.getIdToken(true);
+      console.log("Firebase ID Token:", idToken);
+
+      const res = await fetch("http://localhost:5000/auth/google", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token: idToken }),
+      });
+
+      const data = await res.json();
+      console.log("Backend Response:", data);
+
+      if (!res.ok) {
+        throw new Error(data.message || "Google login failed");
+      }
+
+      if (data.redirect) {
+        toast.info("Please complete your profile");
+        navigate(`/complete-profile/${data.userId}`);
+        return;
+      }
+
+      const { token, user: backendUser } = data;
+      if (!backendUser) throw new Error("User data missing from backend");
+
+      const roles = backendUser.roles || [];
+      if (!roles.length) {
+        toast.error("No roles assigned. Please contact support.");
+        return;
+      }
+
+      storeToken(token, backendUser, roles);
+
+      const roleRoutes = {
+        admin: { path: "/admin-dashboard", msg: "Admin logged in successfully" },
+        volunteer: { path: "/volunteer-dashboard", msg: "Volunteer logged in successfully" },
+        user: { path: "/user-dashboard", msg: "User logged in successfully" },
+        dealer: { path: "/dealer-dashboard", msg: "Dealer logged in successfully" },
+        recycler: { path: "/greensorts-dashboard", msg: "Recycler logged in successfully" },
+      };
+
+      const userRole = roles.find((r) => roleRoutes[r]);
+      if (userRole) {
+        toast.success(roleRoutes[userRole].msg);
+        navigate(roleRoutes[userRole].path);
+      } else {
+        toast.error("Unauthorized access.");
+        logout();
+      }
+
+    } catch (error) {
+      console.error("Google login error:", error);
+      toast.error(error.message || "Google login failed");
+    } finally {
+      setGoogleLoading(false); // 🔹 Stop loader
+      isSigningIn = false;
+    }
+  }
+
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-white px-4 py-10">
@@ -113,9 +191,9 @@ const Login = () => {
 
         {/* Logo + Welcome */}
         <div className="text-center">
-          <img src="/logo.png" alt="ScrapSeva Logo" className="w-16 mx-auto mb-3" />
+          <img src="/logo.png" alt="Gauabhayaranyam Logo" className="w-16 mx-auto mb-3" />
           <h1 className="text-xl font-medium text-gray-700">Welcome Back to</h1>
-          <h2 className="text-2xl font-bold text-green-600">ScrapSeva</h2>
+          <h2 className="text-2xl font-bold text-green-600">Gauabhayaranyam</h2>
         </div>
 
         {/* Login Form */}
@@ -192,22 +270,8 @@ const Login = () => {
                 alt: 'Google',
                 size: 'w-6',
                 hoverBg: 'hover:bg-red-100',
-                onClick: () => (window.location.href = `${import.meta.env.VITE_BACK_URL}/auth/google`),
-              },
-              {
-                src: '/facebook_icon.png',
-                alt: 'Facebook',
-                size: 'w-6',
-                hoverBg: 'hover:bg-blue-100',
-                onClick: () => (window.location.href = `${import.meta.env.VITE_BACK_URL}/auth/facebook`),
-              },
-              {
-                src: '/x_icon.png',
-                alt: 'X (Twitter)',
-                size: 'w-6',
-                hoverBg: 'hover:bg-gray-200',
-                onClick: () => (window.location.href = `${import.meta.env.VITE_BACK_URL}/auth/twitter`),
-              },
+                onClick: () => handleGoogleLogin()
+              }
             ].map(({ src, alt, size, hoverBg, onClick }) => (
               <div
                 key={alt}
@@ -242,6 +306,18 @@ const Login = () => {
             </div>
           </div>
         )}
+
+        {/* Google Login */}
+
+        {googleLoading && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/80 backdrop-blur">
+            <div className="flex flex-col items-center gap-3 animate-pulse">
+              <LucideLoaderPinwheel className="w-8 h-8 text-green-600 animate-spin" />
+              <p className="text-green-700 text-sm font-medium">Signing in with Google...</p>
+            </div>
+          </div>
+        )}
+
       </div>
     </div>
   );

@@ -172,8 +172,8 @@ const DealerSignup = () => {
 
                 {/* Header */}
                 <div className="text-center">
-                    <img src="/logo.png" alt="ScrapSeva Logo" className="mx-auto w-14 mb-2" />
-                    <h2 className="text-2xl font-bold text-blue-700">Join ScrapSeva</h2>
+                    <img src="/logo.png" alt="Gauabhayaranyam Logo" className="mx-auto w-14 mb-2" />
+                    <h2 className="text-2xl font-bold text-blue-700">Join Gauabhayaranyam</h2>
                     <p className="text-sm text-gray-500 mt-1">Create your account and start collecting scrap</p>
                 </div>
 

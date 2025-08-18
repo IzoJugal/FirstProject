@@ -74,7 +74,7 @@ export const AuthProvider = ({ children }) => {
 
     setLoading(true);
     try {
-      const res = await axios.get(`${import.meta.env.VITE_BACK_URL}/auth/auth`, {
+      const res = await axios.get(`http://localhost:5000/auth/auth`, {
         headers: { Authorization: authorizationToken },
       });
 

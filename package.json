@@ -13,8 +13,6 @@
     "@headlessui/react": "^2.2.7",
     "@mui/x-date-pickers": "^8.9.0",
     "@react-google-maps/api": "^2.20.7",
-    "@react-native-firebase/app": "^23.0.1",
-    "@react-native-firebase/messaging": "^23.0.1",
     "@tailwindcss/vite": "^4.1.11",
     "axios": "^1.11.0",
     "browser-image-compression": "^2.0.2",

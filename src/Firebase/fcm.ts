@@ -1,49 +1,25 @@
-import { getMessaging, getToken,onMessage  } from "firebase/messaging";
+import { getMessaging, getToken, onMessage, Messaging, MessagePayload } from "firebase/messaging";
 import { app } from "./firebase";
-import { messaging } from "./firebase";
-export async function getFCMToken(authorizationToken: string) {
+
+const VAPID_KEY =
+  "BJ-aXD5P86O3DJ-HjblMhrcZuie4FNvJd1j8ydRGE0xMSrUWIt_-kv3GBj--JxRJXM8bXcxEjxmpwWbRJbzdtM8";
+
+// 🔹 Get the current FCM token
+export const requestFCMToken = async (authorizationToken?: string): Promise<string | null> => {
   try {
-    const messaging = getMessaging(app);
-    const token = await getToken(messaging, {
-      vapidKey: "BJ-aXD5P86O3DJ-HjblMhrcZuie4FNvJd1j8ydRGE0xMSrUWIt_-kv3GBj--JxRJXM8bXcxEjxmpwWbRJbzdtM8",
-    });
-
-    if (token) {
-      console.log("FCM Token:", token);
-
-      // ✅ Save to backend
-      await fetch("http://localhost:5000/auth/save-fcm-token", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: authorizationToken,
-        },
-        body: JSON.stringify({ fcmToken: token }),
-      });
-    } else {
-      console.log("No registration token available.");
-    }
-
-    return token;
-  } catch (err) {
-    console.error("Error getting FCM token:", err);
-    return null;
-  }
-}
-
-export const requestFCMToken = async (): Promise<string | null> => {
-  try {
-    const messaging = getMessaging(app);
-     const token = await getToken(messaging, {
-      vapidKey: "BJ-aXD5P86O3DJ-HjblMhrcZuie4FNvJd1j8ydRGE0xMSrUWIt_-kv3GBj--JxRJXM8bXcxEjxmpwWbRJbzdtM8",
-    });
-    return token;
+    const messaging: Messaging = getMessaging(app);
+    const token = await getToken(messaging, { vapidKey: VAPID_KEY });
+    return token || null;
   } catch (error) {
-    console.error("FCM Token error:", error);
+    console.error("❌ FCM Token error:", error);
     return null;
   }
 };
 
-export const onForegroundMessage = (callback: (payload: any) => void) => {
+// 🔹 Handle foreground notifications
+export const onForegroundMessage = (
+  callback: (payload: MessagePayload) => void
+) => {
+  const messaging: Messaging = getMessaging(app);
   return onMessage(messaging, callback);
 };

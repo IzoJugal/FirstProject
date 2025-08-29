@@ -15,7 +15,6 @@ apiKey: "AIzaSyAfrfjMI-nZgsFls7TpDaYWeAdKeX4mVck",
 const messaging = firebase.messaging();
 
 messaging.onBackgroundMessage(function (payload) {
-  console.log("Received background message ", payload);
 
   const notificationTitle = payload.notification?.title || "Background Notification";
   const notificationOptions = {
